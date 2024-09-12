@@ -27,7 +27,15 @@ public class DbInfoCommand implements Commands<String>{
             //Now we convert to integer
             short pagesShort = ByteBuffer.wrap(pageSizeBuffer).getShort();
             int pageSize = Short.toUnsignedInt(pagesShort);
-            return String.format("database page size: %d",pageSize);
+            int noOfBytesForCellReading = 103 - 16 - 2; //At offset 103 as 16 skipped and two bytes read
+            fis.skip(103 - 16 - 2);
+            byte [] noOfTableBuffer = new byte[2];
+            //Since we are assuming for now all the cells are in one page
+            fis.read(noOfTableBuffer);
+            short noOfTablesShort = ByteBuffer.wrap(noOfTableBuffer).getShort();
+            int noOfTables = Short.toUnsignedInt(noOfTablesShort);
+
+            return String.format("database page size: %d\nnumber of tables: %d",pageSize,noOfTables);
         }
         catch (IOException e){
             System.out.println(e.getMessage());

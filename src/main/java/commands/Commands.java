@@ -1,5 +1,7 @@
 package commands;
 
+import enums.CommandEnum;
+
 import java.util.Arrays;
 
 public interface Commands<T>{

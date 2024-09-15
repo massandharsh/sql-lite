@@ -2,6 +2,7 @@ import commands.*;
 import enums.DataType;
 import models.ColumnDetails;
 import models.RowData;
+import strategy.ColDataExtractionStrategy;
 import utils.FileRelatedUtils;
 
 import java.io.ByteArrayInputStream;
@@ -21,60 +22,44 @@ public class Main {
       System.out.println("Missing <database path> and <command>");
       return;
     }
-    CommandOrchestrator commandOrchestrator = new CommandOrchestrator(List.of(new MultipleColumnSelectCommand(),new SingleColumSelectCommand(),new DbInfoCommand(),new TablesCommand(),new CountFromTableCommand()));
+    CommandOrchestrator commandOrchestrator = new CommandOrchestrator(List.of(
+            new FilterCommand(new ColDataExtractionStrategy()),
+            new MultipleColumnSelectCommand(new ColDataExtractionStrategy()),new SingleColumSelectCommand(new ColDataExtractionStrategy()),new DbInfoCommand(),new TablesCommand(),new CountFromTableCommand()));
     final String command = Arrays.stream(args).reduce("", (a, b)->a+ " " +b).trim();
     System.out.println(commandOrchestrator.execute(command));
   }
-  public static class Tester{
+  public static class Tester {
     public static void main(String[] args) {
-      // Sample RowData list
-      List<RowData> rowData = List.of(
-              new RowData(
-                      List.of(
-                              new ColumnDetails(DataType.TEXT, "pistachio"),
-                              new ColumnDetails(DataType.TEXT, "chocolate"),
-                              new ColumnDetails(DataType.TEXT, "banana")
-                      ),
-                      List.of("0", "Sweet", "Delicious", "Nutty")
-              ),
-              new RowData(
-                      List.of(
-                              new ColumnDetails(DataType.TEXT, "pistachio"),
-                              new ColumnDetails(DataType.TEXT, "chocolate"),
-                              new ColumnDetails(DataType.TEXT, "banana")
-                      ),
-                      List.of("1", "Bitter", "Rich", "Fruity")
-              )
-      );
+      // Define the SQL query
+      String query = "SELECT name, color FROM apples WHERE color = 'Yellow'";
 
-      // Define the columns to include in the output
-      List<String> columnNamesToInclude = List.of("pistachio", "chocolate", "banana");
+      // Define the regex pattern
+      String regex = "SELECT\\s+(\\w+(?:\\s*,\\s*\\w+)*)\\s+FROM\\s+(\\w+)\\s+WHERE\\s+(\\w+)\\s*=\\s*'([^']+)'";
 
-      // Extract and format the data based on the column names
-      String formattedData = rowData.stream()
-              .map(rowDatum -> columnNamesToInclude.stream()
-                      .map(colName -> getColumnValue(rowDatum, colName))
-                      .collect(Collectors.joining(" | "))
-              )
-              .collect(Collectors.joining("\n"));
+      // Compile the pattern
+      Pattern pattern = Pattern.compile(regex);
 
-      // Print the formatted data
-      System.out.println(formattedData);
-    }
+      // Create a matcher for the query
+      Matcher matcher = pattern.matcher(query);
 
-    // Method to get the value of a column by name
-    private static String getColumnValue(RowData rowDatum, String columnName) {
-      int colIndex = getColumnIndex(rowDatum, columnName);
-      return colIndex >= 0 ? rowDatum.getData().get(colIndex) : "";
-    }
+      // Check if the pattern matches
+      if (matcher.find()) {
+        // Get the total number of groups
+        int groupCount = matcher.groupCount();
 
-    // Method to find the index of the column with the given name
-    private static int getColumnIndex(RowData rowDatum, String colName) {
-      return rowDatum.getColumnDetailsList().stream()
-              .filter(columnDetail -> colName.equals(columnDetail.getColumnName()))
-              .mapToInt(rowDatum.getColumnDetailsList()::indexOf)
-              .findFirst()
-              .orElse(-1);
+        // Extract the first group
+        String firstGroup = matcher.group(1);
+
+        // Extract the last group
+        String lastGroup = matcher.group(groupCount);
+
+        // Print the results
+        System.out.println("First Group: " + firstGroup);
+        System.out.println("Last Group: " + lastGroup);
+        System.out.println(matcher.group(groupCount - 1));
+      } else {
+        System.out.println("No match found.");
+      }
     }
   }
 }

@@ -10,6 +10,7 @@ public enum CommandEnum {
     TABLES(".tables"),
     COUNT_FROM_TABLE("count"),
     SINGLE_COL_SELECT("select"),
-    MULTI_COL_SELECT("multiSelect");
+    MULTI_COL_SELECT("multiSelect"),
+    FILTER("filter");
     private final String command;
 }

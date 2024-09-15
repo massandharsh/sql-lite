@@ -1,6 +1,7 @@
 package utils;
 
 import enums.DataType;
+import models.ColumnDetails;
 import models.PageHeader;
 import models.RowData;
 import models.Schema;
@@ -167,11 +168,13 @@ public class Commons {
     }
 
     public static int indexOfColumn(RowData rowDatum, String columnName) {
-        return rowDatum.getColumnDetailsList().stream()
-                .filter(cd -> columnName.equals(cd.getColumnName()))
-                .mapToInt(rowDatum.getColumnDetailsList()::indexOf)
-                .findFirst()
-                .orElse(-1);
+        List<ColumnDetails> columns = rowDatum.getColumnDetailsList();
+        for (int i = 0; i < columns.size(); i++) {
+            if (columnName.equalsIgnoreCase(columns.get(i).getColumnName())) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 

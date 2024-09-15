@@ -47,9 +47,10 @@ public class MultipleColumnSelectCommand implements Commands<String>{
         List<String> columns = new ArrayList<>();
         if(matcher.find()){
             String cols = matcher.group(1);
-            columns.addAll(Arrays.asList(cols.trim().split(",")));
+            Arrays.asList(cols.trim().split(",")).forEach(col -> {
+                columns.add(col.trim());
+            });
         }
-
         int pageSize = FileRelatedUtils.getPageSize(fileName);
         List<RowData> rowData = Commons.getRowData(fileName,pageSize);
         String createQuery = rowData.stream()
@@ -71,8 +72,8 @@ public class MultipleColumnSelectCommand implements Commands<String>{
         //Since we have cols we can do extraction using split
         for(String column : columns1){
             String [] singleCol = column.trim().split("\\s");
-            String colName = singleCol[0];
-            String colType = singleCol[1];
+            String colName = singleCol[0].toLowerCase();
+            String colType = singleCol[1].toLowerCase();
             columnDetails.add(new ColumnDetails(DataType.getDataType(colType),colName));
         }
 
@@ -85,7 +86,6 @@ public class MultipleColumnSelectCommand implements Commands<String>{
         for(int offset : contentOffset){
             tableRowContent.add(getRowRelatedDataLeafCell(fileName,schema,offset));
         }
-
         return tableRowContent.stream()
                 .map(rowDatum -> columns.stream()
                         .map(colName -> getColumnValue(rowDatum, colName))

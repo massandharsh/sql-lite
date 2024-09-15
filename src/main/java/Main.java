@@ -1,4 +1,7 @@
 import commands.*;
+import enums.DataType;
+import models.ColumnDetails;
+import models.RowData;
 import utils.FileRelatedUtils;
 
 import java.io.ByteArrayInputStream;
@@ -10,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Main {
   public static void main(String[] args){
@@ -23,17 +27,54 @@ public class Main {
   }
   public static class Tester{
     public static void main(String[] args) {
-      String input = "CREATE TABLE apples\n" +
-              "(\n" +
-              "\tid integer primary key autoincrement,\n" +
-              "\tname text,\n" +
-              "\tcolor text\n" +
-              ")";
-      Pattern pattern = Pattern.compile("\\(([^)]+)\\)");
-      Matcher matcher = pattern.matcher(input);
-      while(matcher.find()){
-        System.out.println(matcher.group(1));
-      }
+      // Sample RowData list
+      List<RowData> rowData = List.of(
+              new RowData(
+                      List.of(
+                              new ColumnDetails(DataType.TEXT, "pistachio"),
+                              new ColumnDetails(DataType.TEXT, "chocolate"),
+                              new ColumnDetails(DataType.TEXT, "banana")
+                      ),
+                      List.of("0", "Sweet", "Delicious", "Nutty")
+              ),
+              new RowData(
+                      List.of(
+                              new ColumnDetails(DataType.TEXT, "pistachio"),
+                              new ColumnDetails(DataType.TEXT, "chocolate"),
+                              new ColumnDetails(DataType.TEXT, "banana")
+                      ),
+                      List.of("1", "Bitter", "Rich", "Fruity")
+              )
+      );
+
+      // Define the columns to include in the output
+      List<String> columnNamesToInclude = List.of("pistachio", "chocolate", "banana");
+
+      // Extract and format the data based on the column names
+      String formattedData = rowData.stream()
+              .map(rowDatum -> columnNamesToInclude.stream()
+                      .map(colName -> getColumnValue(rowDatum, colName))
+                      .collect(Collectors.joining(" | "))
+              )
+              .collect(Collectors.joining("\n"));
+
+      // Print the formatted data
+      System.out.println(formattedData);
+    }
+
+    // Method to get the value of a column by name
+    private static String getColumnValue(RowData rowDatum, String columnName) {
+      int colIndex = getColumnIndex(rowDatum, columnName);
+      return colIndex >= 0 ? rowDatum.getData().get(colIndex) : "";
+    }
+
+    // Method to find the index of the column with the given name
+    private static int getColumnIndex(RowData rowDatum, String colName) {
+      return rowDatum.getColumnDetailsList().stream()
+              .filter(columnDetail -> colName.equals(columnDetail.getColumnName()))
+              .mapToInt(rowDatum.getColumnDetailsList()::indexOf)
+              .findFirst()
+              .orElse(-1);
     }
   }
 }

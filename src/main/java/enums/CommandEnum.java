@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum CommandEnum {
     DB_INFO(".dbinfo"),
-    TABLES(".tables");
+    TABLES(".tables"),
+    COUNT_FROM_TABLE("count");
     private final String command;
 }

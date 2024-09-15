@@ -30,7 +30,7 @@ public class FileRelatedUtils{
      */
     public static PageHeader getPageHeader(String fileName, int pageNumber, int pageSize) {
         File file = new File(fileName);
-        int offset = DATABASE_HEADER_LENGTH + (pageNumber - 1) * pageSize; // Calculate the byte offset for the given page number
+        int offset = (pageNumber > 1 ? 0 : DATABASE_HEADER_LENGTH) + (pageNumber - 1) * pageSize; // Calculate the byte offset for the given page number
 
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             // Skip to the start of the page
@@ -88,8 +88,9 @@ public class FileRelatedUtils{
                 CellFormatType.getCellFormat(cellFormatValue) == CellFormatType.INTERIOR_INDEX;
     }
 
-    public static List<Integer> contentOffsetForAllTheTablesAssumingSinglePage(String fileName, CellFormatType cellFormatType, int noOfCells){
+    public static List<Integer> contentOffsetForAllTheTables(String fileName, CellFormatType cellFormatType, int noOfCells,int pageNumber,int pageSize){
         try(FileInputStream fileInputStream = new FileInputStream(fileName)){
+            int beginOffset = (pageNumber > 1 ? 0 : DATABASE_HEADER_LENGTH) + (pageNumber - 1) * pageSize;
             int offset = DATABASE_HEADER_LENGTH + PAGE_HEADER_FORMAT + (isInteriorCell(cellFormatType.value) ? RIGHT_MOST_POINTER_BYTES : 0);
             fileInputStream.skip(offset);
             List<Integer> contentOffsets = new ArrayList<>();
@@ -104,6 +105,23 @@ public class FileRelatedUtils{
         catch (IOException e){
             System.out.println(e.getMessage());
             return Collections.emptyList();
+        }
+    }
+
+    public static int getPageSize(String fileName){
+        try(FileInputStream fis = new FileInputStream(fileName)){
+            //First we have to skip the 16 bytes of this file as that is header
+            //SQLITE format 3 + null terminator
+            fis.skip(16);
+            byte [] pageSizeBuffer = new byte[2]; //Big Endian value from left to right
+            fis.read(pageSizeBuffer);
+            //Now we convert to integer
+            short pagesShort = ByteBuffer.wrap(pageSizeBuffer).getShort();
+            return Short.toUnsignedInt(pagesShort);
+        }
+        catch (IOException e){
+            System.out.println(e.getMessage());
+            return -1;
         }
     }
 }

@@ -29,7 +29,7 @@ public class TablesCommand implements Commands<String>{
         String fileName = commands[0];
         int pageSize = FileRelatedUtils.getPageSize(fileName);
 
-        PageHeader pageHeader = FileRelatedUtils.getPageHeader(fileName,1,4096);
+        PageHeader pageHeader = FileRelatedUtils.getPageHeader(fileName,1,pageSize);
         assert pageHeader != null;
         List<RowData> rowData = new ArrayList<>();
         List<Integer> contentOffset = FileRelatedUtils.contentOffsetForAllTheTables(fileName,pageHeader.getCellFormatType(),pageHeader.getNoOfCells(),1,pageSize);

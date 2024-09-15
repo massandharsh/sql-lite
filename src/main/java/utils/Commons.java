@@ -1,6 +1,7 @@
 package utils;
 
 import enums.DataType;
+import models.PageHeader;
 import models.RowData;
 import models.Schema;
 
@@ -12,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Commons {
     public static int decodeVariant(InputStream inputStream) throws IOException {
@@ -54,9 +56,14 @@ public class Commons {
             rowData.setColumnDetailsList(schema.getColumnDetails());
             for(int i = 0 ; i < tableData.size() ; i++){
                 int data = tableData.get(i);
+                if(data == 0){
+                    output.add("0");
+                    continue;
+                }
                 byte [] d = new byte[data];
                 fileInputStream.read(d);
-                if(rowData.getColumnDetailsList().get(i).getDataType() == DataType.INT8BIT){
+                if(rowData.getColumnDetailsList().size() > i
+                        && rowData.getColumnDetailsList().get(i).getDataType() == DataType.INT8BIT){
                     output.add(ByteBuffer.wrap(d).get() + "");
                     continue;
                 }
@@ -103,6 +110,60 @@ public class Commons {
         }
 
         return tableData;
+    }
+
+    public static int getPageNumberForTableFromSchema(String fileName, String tblName, int pageSize) {
+
+        List<RowData> rowData = getRowData(fileName, pageSize);
+        //We can get the root page for the corresponding table and query in that root page accordingly
+        int pageNoForTable = rowData.stream()
+                .flatMap(rowDatum -> {
+                    // Get indices for tbl_name and rootpage columns
+                    int tblNameIndex = rowDatum.getColumnDetailsList().stream()
+                            .filter(cd -> "tbl_name".equals(cd.getColumnName()))
+                            .mapToInt(rowDatum.getColumnDetailsList()::indexOf)
+                            .findFirst()
+                            .orElse(-1);
+
+                    int rootPageIndex = rowDatum.getColumnDetailsList().stream()
+                            .filter(cd -> "rootpage".equals(cd.getColumnName()))
+                            .mapToInt(rowDatum.getColumnDetailsList()::indexOf)
+                            .findFirst()
+                            .orElse(-1);
+
+                    // Ensure both indices are valid and tbl_name matches
+                    if (tblNameIndex >= 0 && rootPageIndex >= 0 &&
+                            rowDatum.getData().get(tblNameIndex).equals(tblName)) {
+                        try {
+                            return Optional.of(Integer.parseInt(rowDatum.getData().get(rootPageIndex))).stream();
+                        } catch (NumberFormatException e) {
+                            // If parsing fails, return empty stream
+                            return Optional.<Integer>empty().stream();
+                        }
+                    }
+
+                    return Optional.<Integer>empty().stream();
+                })
+                .findFirst()
+                .orElse(-1);
+        if(pageNoForTable == -1){
+            throw new RuntimeException("Table not found");
+        }
+        return pageNoForTable;
+    }
+
+    public static List<RowData> getRowData(String fileName, int pageSize) {
+        PageHeader pageHeader = FileRelatedUtils.getPageHeader(fileName,1, pageSize);
+        assert pageHeader != null;
+        List<RowData> rowData = new ArrayList<>();
+        List<Integer> contentOffset = FileRelatedUtils.contentOffsetForAllTheTables(fileName,pageHeader.getCellFormatType(),pageHeader.getNoOfCells(),1, pageSize);
+        //Now we have to read content from the offset based on the type of schema
+        //Schema for sqlite_schema
+        Schema sqlLiteSchema = SchemaRelatedUtils.getSqlLiteSchema();
+        for(int offset : contentOffset){
+            rowData.add(getRowRelatedDataLeafCell(fileName,sqlLiteSchema,offset));
+        }
+        return rowData;
     }
 
 

@@ -91,14 +91,14 @@ public class FileRelatedUtils{
     public static List<Integer> contentOffsetForAllTheTables(String fileName, CellFormatType cellFormatType, int noOfCells,int pageNumber,int pageSize){
         try(FileInputStream fileInputStream = new FileInputStream(fileName)){
             int beginOffset = (pageNumber > 1 ? 0 : DATABASE_HEADER_LENGTH) + (pageNumber - 1) * pageSize;
-            int offset = DATABASE_HEADER_LENGTH + PAGE_HEADER_FORMAT + (isInteriorCell(cellFormatType.value) ? RIGHT_MOST_POINTER_BYTES : 0);
+            int offset = beginOffset + PAGE_HEADER_FORMAT + (isInteriorCell(cellFormatType.value) ? RIGHT_MOST_POINTER_BYTES : 0);
             fileInputStream.skip(offset);
             List<Integer> contentOffsets = new ArrayList<>();
             for(int i = 0 ; i < noOfCells ; ++i){
                 byte[] content = new byte[2];
                 fileInputStream.read(content);
-                int contentOffset = ByteBuffer.wrap(content).order(ByteOrder.BIG_ENDIAN).getShort();
-                contentOffsets.add(contentOffset);
+                int contentOffset = ByteBuffer.wrap(content).getShort();
+                contentOffsets.add(contentOffset + (pageNumber - 1) * pageSize);
             }
             return Collections.unmodifiableList(contentOffsets);
         }

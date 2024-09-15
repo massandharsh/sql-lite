@@ -9,20 +9,25 @@ import utils.Commons;
 import utils.FileRelatedUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static utils.Commons.*;
 
-public class SingleColumSelectCommand implements Commands<String>{
+public class MultipleColumnSelectCommand implements Commands<String>{
     @Override
     public boolean verifyCommand(String command) {
         String [] commands = commandExtractor(command);
-        return commands.length == 5 && command.toLowerCase().contains("select") && !command.toLowerCase().contains("count");
+        return commands.length >= 5 && command.toLowerCase().contains("select") && !command.toLowerCase().contains("count")
+                && command.contains(",");
     }
-
+    private static String getColumnValue(RowData rowDatum, String columnName) {
+        int colIndex = indexOfColumn(rowDatum, columnName);
+        return colIndex >= 0 ? rowDatum.getData().get(colIndex) : "";
+    }
 
     @Override
     public String invoke(String command) throws Exception {
@@ -32,7 +37,19 @@ public class SingleColumSelectCommand implements Commands<String>{
         String [] commands = commandExtractor(command);
         String fileName = commands[0];
         String tblName = commands[commands.length - 1];
-        String columnName = commands[2];
+        String regex = "select\\s+(\\S+(?:\\s*,\\s*\\S+)*)\\s+from";
+        Pattern pattern = Pattern.compile(regex);
+        String [] query = Arrays.stream(commands)
+                .skip(1)
+                .toArray(String[]::new);
+        Matcher matcher = pattern.matcher(Arrays.stream(query).reduce("",(a,b)->a+" "+b).trim().toLowerCase());
+
+        List<String> columns = new ArrayList<>();
+        if(matcher.find()){
+            String cols = matcher.group(1);
+            columns.addAll(Arrays.asList(cols.trim().split(",")));
+        }
+
         int pageSize = FileRelatedUtils.getPageSize(fileName);
         List<RowData> rowData = Commons.getRowData(fileName,pageSize);
         String createQuery = rowData.stream()
@@ -43,16 +60,16 @@ public class SingleColumSelectCommand implements Commands<String>{
                 .map(rowDatum -> rowDatum.getData().get(indexOfColumn(rowDatum, "text")))
                 .findFirst()
                 .orElse("");
-        Pattern pattern = Pattern.compile("\\(([^)]+)\\)");
-        Matcher matcher = pattern.matcher(createQuery);
+        Pattern pattern1 = Pattern.compile("\\(([^)]+)\\)");
+        Matcher matcher1 = pattern1.matcher(createQuery);
         String cols = "";
         List<ColumnDetails> columnDetails = new ArrayList<>();
-        while (matcher.find()) {
-            cols = matcher.group(1);
+        while (matcher1.find()) {
+            cols = matcher1.group(1);
         }
-        String [] columns = cols.split(",");
+        String [] columns1 = cols.split(",");
         //Since we have cols we can do extraction using split
-        for(String column : columns){
+        for(String column : columns1){
             String [] singleCol = column.trim().split("\\s");
             String colName = singleCol[0];
             String colType = singleCol[1];
@@ -70,13 +87,10 @@ public class SingleColumSelectCommand implements Commands<String>{
         }
 
         return tableRowContent.stream()
-                .map(rowDatum -> {
-                    int colIndex = indexOfColumn(rowDatum, columnName);
-                    return colIndex >= 0 ? rowDatum.getData().get(colIndex) : null;
-                })
-                .filter(Objects::nonNull) // Remove any nulls if column not found
-                .reduce("",(b,c)-> b + c + "\n").trim();
-
-
+                .map(rowDatum -> columns.stream()
+                        .map(colName -> getColumnValue(rowDatum, colName))
+                        .collect(Collectors.joining("|"))
+                )
+                .collect(Collectors.joining("\n"));
     }
 }

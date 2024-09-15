@@ -17,7 +17,7 @@ public class Main {
       System.out.println("Missing <database path> and <command>");
       return;
     }
-    CommandOrchestrator commandOrchestrator = new CommandOrchestrator(List.of(new SingleColumSelectCommand(),new DbInfoCommand(),new TablesCommand(),new CountFromTableCommand()));
+    CommandOrchestrator commandOrchestrator = new CommandOrchestrator(List.of(new MultipleColumnSelectCommand(),new SingleColumSelectCommand(),new DbInfoCommand(),new TablesCommand(),new CountFromTableCommand()));
     final String command = Arrays.stream(args).reduce("", (a, b)->a+ " " +b).trim();
     System.out.println(commandOrchestrator.execute(command));
   }

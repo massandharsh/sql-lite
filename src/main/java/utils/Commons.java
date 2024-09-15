@@ -166,5 +166,13 @@ public class Commons {
         return rowData;
     }
 
+    public static int indexOfColumn(RowData rowDatum, String columnName) {
+        return rowDatum.getColumnDetailsList().stream()
+                .filter(cd -> columnName.equals(cd.getColumnName()))
+                .mapToInt(rowDatum.getColumnDetailsList()::indexOf)
+                .findFirst()
+                .orElse(-1);
+    }
+
 
 }

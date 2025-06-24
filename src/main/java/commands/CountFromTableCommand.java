@@ -15,7 +15,7 @@ import static utils.Commons.getRowRelatedDataLeafCell;
 
 public class CountFromTableCommand implements Commands<String>{
     private final int temp = 1;
-    private final int temp2 = 2;
+    private final int temp2 = 20;
     private final int temp3 = 3;
     private final int anInt = 2;
        private final int temp4 = 3;

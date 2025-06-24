@@ -18,7 +18,7 @@ public class CountFromTableCommand implements Commands<String>{
     private final int temp2 = 2;
     private final int temp3 = 3;
     private final int anInt = 2;
-       private final int temp4 = 4;
+       private final int temp4 = 3;
     @Override
     public boolean verifyCommand(String command) {
         String [] commands = commandExtractor(command);

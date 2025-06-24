@@ -20,6 +20,7 @@ public class FilterCommand implements Commands<String>{
     //This does the data extraction strategy task master test changes
     private final DataExtractionStrategy dataExtractionStrategy;
     private Commands<List<String>> commands;
+    private List<String> dummyString;
     @Override
     public boolean verifyCommand(String command) {
         String [] commands = commandExtractor(command);

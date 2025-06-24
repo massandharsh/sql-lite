@@ -17,7 +17,7 @@ import static utils.Commons.indexOfColumn;
 
 @RequiredArgsConstructor
 public class FilterCommand implements Commands<String>{
-    //This does the data extraction strategy task master test
+    //This does the data extraction strategy task master test changes
     private final DataExtractionStrategy dataExtractionStrategy;
     private Commands<List<String>> commands;
     @Override

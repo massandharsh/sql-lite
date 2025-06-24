@@ -14,7 +14,7 @@ import static utils.Commons.getPageNumberForTableFromSchema;
 import static utils.Commons.getRowRelatedDataLeafCell;
 
 public class CountFromTableCommand implements Commands<String>{
-
+    private final int temp = 0;
     @Override
     public boolean verifyCommand(String command) {
         String [] commands = commandExtractor(command);

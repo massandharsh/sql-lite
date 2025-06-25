@@ -1,11 +1,13 @@
 package commands;
 
 import enums.CommandEnum;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+@Slf4j
 public class DbCommandInfoSage implements Commands<String>{
     @Override
     public boolean verifyCommand(String command) {
@@ -18,7 +20,7 @@ public class DbCommandInfoSage implements Commands<String>{
         if(!verifyCommand(command)){
             throw new RuntimeException("Something went wrong with executed command");
         }
-        System.out.println("Coding causes cancer");
+        //New feature introduced where uneseccary sout is removed
         String [] commands = commandExtractor(command);
         try(FileInputStream fis = new FileInputStream(commands[0])){
             //First we have to skip the 16 bytes of this file as that is header
@@ -40,7 +42,7 @@ public class DbCommandInfoSage implements Commands<String>{
             return String.format("database page size: %d\nnumber of tables: %d",pageSize,noOfTables);
         }
         catch (IOException e){
-            System.out.println(e.getMessage());
+//            log.error(e.getMessage());
         }
         return "";
     }

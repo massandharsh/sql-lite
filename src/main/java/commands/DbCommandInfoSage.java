@@ -8,42 +8,56 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 @Slf4j
-public class DbCommandInfoSage implements Commands<String>{
+public class DbCommandInfoSage implements Commands<String> {
+
+    private static final int SQLITE_HEADER_SIZE = 16;
+    private static final int PAGE_SIZE_BYTES = 2;
+    private static final int OFFSET_TO_CELL_COUNT = 103;
+    private static final int CELL_COUNT_BYTES = 2;
+
     @Override
     public boolean verifyCommand(String command) {
-        String [] commands = commandExtractor(command);
-        return commands.length == 2 && getCommandEnum(commands[1]) == CommandEnum.DB_INFO;
+        String[] parts = commandExtractor(command);
+        return parts.length == 2 && getCommandEnum(parts[1]) == CommandEnum.DB_INFO;
     }
 
     @Override
-    public String invoke(String command) throws Exception {
-        if(!verifyCommand(command)){
-            throw new RuntimeException("Something went wrong with executed command");
+    public String invoke(String command) {
+        if (!verifyCommand(command)) {
+            throw new IllegalArgumentException("Invalid command format or type.");
         }
-        //why this feature is bad and not required ngl very bad
-        String [] commands = commandExtractor(command);
-        try(FileInputStream fis = new FileInputStream(commands[0])){
-            //First we have to skip the 16 bytes of this file as that is header
-            //SQLITE format 3 + null terminator
-            fis.skip(16);
-            byte [] pageSizeBuffer = new byte[2]; //Big Endian value from left to right
-            fis.read(pageSizeBuffer);
-            //Now we convert to integer
-            short pagesShort = ByteBuffer.wrap(pageSizeBuffer).getShort();
-            int pageSize = Short.toUnsignedInt(pagesShort);
-            int noOfBytesForCellReading = 103 - 16 - 2; //At offset 103 as 16 skipped and two bytes read
-            fis.skip(noOfBytesForCellReading);
-            byte [] noOfTableBuffer = new byte[2];
-            //Since we are assuming for now all the cells are in one page
-            fis.read(noOfTableBuffer);
-            short noOfTablesShort = ByteBuffer.wrap(noOfTableBuffer).getShort();
-            int noOfTables = Short.toUnsignedInt(noOfTablesShort);
 
-            return String.format("database page size: %d\nnumber of tables: %d",pageSize,noOfTables);
+        String[] parts = commandExtractor(command);
+        String filePath = parts[0];
+
+        try (FileInputStream fis = new FileInputStream(filePath)) {
+
+            skipBytes(fis, SQLITE_HEADER_SIZE);
+            int pageSize = readUnsignedShort(fis);
+
+            skipBytes(fis, OFFSET_TO_CELL_COUNT - SQLITE_HEADER_SIZE - PAGE_SIZE_BYTES);
+            int tableCount = readUnsignedShort(fis);
+
+            return String.format("📦 Database page size: %d\n📊 Number of tables: %d", pageSize, tableCount);
+
+        } catch (IOException e) {
+            return "Error reading DB file.";
         }
-        catch (IOException e){
-//            log.error(e.getMessage());
+    }
+
+    private void skipBytes(FileInputStream fis, int bytes) throws IOException {
+        long skipped = fis.skip(bytes);
+        if (skipped != bytes) {
+            throw new IOException("Failed to skip required bytes.");
         }
-        return "";
+    }
+
+    private int readUnsignedShort(FileInputStream fis) throws IOException {
+        byte[] buffer = new byte[2];
+        int read = fis.read(buffer);
+        if (read != 2) {
+            throw new IOException("Failed to read 2 bytes from file.");
+        }
+        return Short.toUnsignedInt(ByteBuffer.wrap(buffer).getShort());
     }
 }

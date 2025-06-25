@@ -20,7 +20,7 @@ public class DbCommandInfoSage implements Commands<String>{
         if(!verifyCommand(command)){
             throw new RuntimeException("Something went wrong with executed command");
         }
-        //New feature introduced where uneseccary sout is removed
+        //New feature introduced where unesessdccary sout is removed with speeling fix
         String [] commands = commandExtractor(command);
         try(FileInputStream fis = new FileInputStream(commands[0])){
             //First we have to skip the 16 bytes of this file as that is header

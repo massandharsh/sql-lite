@@ -16,8 +16,8 @@ import static utils.Commons.getRowRelatedDataLeafCell;
 public class CountFromTableCommand implements Commands<String>{
     private final int temp = 1;
     private final int temp2 = 20;
-    private final int temp3 = 3223;
-    private final int anInt = 226532;
+    private final int temp3 = 32223;
+    private final int anInt = 2265232;
        private final int temp4 = 3;
     @Override
     public boolean verifyCommand(String command) {

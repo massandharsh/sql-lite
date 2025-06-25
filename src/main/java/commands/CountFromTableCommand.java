@@ -20,7 +20,7 @@ public class CountFromTableCommand implements Commands<String>{
     private final int anInt = 2265232;
        private final int temp4 = 3;
     //This code is hard :(
-    //Can you explain it hard it is
+    //Can you explain it hard it is very hard
     @Override
     public boolean verifyCommand(String command) {
         String [] commands = commandExtractor(command);

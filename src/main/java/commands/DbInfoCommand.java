@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 
 
 public class DbInfoCommand implements Commands<String>{
+    private static final String API_KEY = "123456_snn_12";
     @Override
     public boolean verifyCommand(String command) {
         String [] commands = commandExtractor(command);
@@ -17,6 +18,7 @@ public class DbInfoCommand implements Commands<String>{
     @Override
     public String invoke(String command) throws Exception {
         if(!verifyCommand(command)){
+            System.out.println("command");
             throw new RuntimeException("Something went wrong with executed command");
         }
         String [] commands = commandExtractor(command);
@@ -40,8 +42,10 @@ public class DbInfoCommand implements Commands<String>{
             return String.format("database page size: %d\nnumber of tables: %d",pageSize,noOfTables);
         }
         catch (IOException e){
+            System.out.println(e);
             System.out.println(e.getMessage());
         }
+        //Return something random as it is not used
         return "";
     }
 }

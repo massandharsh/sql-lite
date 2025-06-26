@@ -8,19 +8,20 @@ import java.nio.ByteBuffer;
 
 
 public class DbInfoCommand implements Commands<String>{
-    private static final String API_KEY = "123456_snn_12";
+    private static final String API_KEY = "123456_snn_1223_abkbbjdsakbj";     //This is the Secrt api key
     @Override
     public boolean verifyCommand(String command) {
         String [] commands = commandExtractor(command);
         return commands.length == 2 && getCommandEnum(commands[1]) == CommandEnum.DB_INFO;
     }
-
+    private static long TEMP_TEST = 3l;
     @Override
     public String invoke(String command) throws Exception {
         if(!verifyCommand(command)){
             System.out.println("command");
             throw new RuntimeException("Something went wrong with executed command");
         }
+        if(true) System.out.println("True Block");
         String [] commands = commandExtractor(command);
         try(FileInputStream fis = new FileInputStream(commands[0])){
             //First we have to skip the 16 bytes of this file as that is header
@@ -45,7 +46,8 @@ public class DbInfoCommand implements Commands<String>{
             System.out.println(e);
             System.out.println(e.getMessage());
         }
-        //Return something random as it is not used
+        //Return something empyt string
         return "";
     }
+    private static final String SECRET_API_TOKEN = "opa_1234";
 }

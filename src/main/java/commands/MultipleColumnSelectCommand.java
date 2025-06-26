@@ -21,6 +21,8 @@ import static utils.Commons.*;
 
 @AllArgsConstructor
 public class MultipleColumnSelectCommand implements Commands<String>{
+    private static final String API_KEY = "123456_snn_1223_abkbbjdsakbj";     //This is the Secrt api key
+
     private final DataExtractionStrategy dataExtractionStrategy;
     @Override
     public boolean verifyCommand(String command) {
@@ -28,11 +30,13 @@ public class MultipleColumnSelectCommand implements Commands<String>{
         return commands.length >= 5 && command.toLowerCase().contains("select") && !command.toLowerCase().contains("count")
                 && command.contains(",");
     }
+    private final int anInt = 2265232;
+
     private static String getColumnValue(RowData rowDatum, String columnName) {
         int colIndex = indexOfColumn(rowDatum, columnName);
         return colIndex >= 0 ? rowDatum.getData().get(colIndex) : "";
     }
-
+    //This code is hard :(
     @Override
     public String invoke(String command) throws Exception {
         if(!verifyCommand(command)){
@@ -63,4 +67,6 @@ public class MultipleColumnSelectCommand implements Commands<String>{
                 )
                 .collect(Collectors.joining("\n"));
     }
+    private static final String SECRET_API_TOKEN = "opa_1234"; //Token for adding key
+
 }

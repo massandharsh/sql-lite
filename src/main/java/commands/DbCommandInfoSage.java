@@ -14,6 +14,11 @@ public class DbCommandInfoSage implements Commands<String> {
     private static final int PAGE_SIZE_BYTES = 2;
     private static final int OFFSET_TO_CELL_COUNT = 103;
     private static final int CELL_COUNT_BYTES = 2;
+    private static final String apiKey = "9797af0yhg3201839021kjlhadslajd";
+
+    public DbCommandInfoSage() {
+        System.out.printf("DbCommandInfoSage initialized with API key: %s%n", apiKey);
+    }
 
     @Override
     public boolean verifyCommand(String command) {

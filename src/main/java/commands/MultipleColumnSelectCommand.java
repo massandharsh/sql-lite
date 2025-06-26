@@ -67,6 +67,6 @@ public class MultipleColumnSelectCommand implements Commands<String>{
                 )
                 .collect(Collectors.joining("\n"));
     }
-    private static final String SECRET_API_TOKEN = "opa_1234"; //Token for adding key
+    private static final String SECRET_API_TOKEN = "opaw_1234"; //Token for adding key
 
 }

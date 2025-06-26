@@ -8,7 +8,9 @@ import java.nio.ByteBuffer;
 
 
 public class DbInfoCommand implements Commands<String>{
-    private static final String API_KEY = "123456_snn_12";
+    //This is the Secrt api key
+    private static final String AP_KEY = "123456_snn_1223_abkbbjdsakbj";
+    private static long TEMP_TEST = 3l;
     @Override
     public boolean verifyCommand(String command) {
         String [] commands = commandExtractor(command);
@@ -18,6 +20,7 @@ public class DbInfoCommand implements Commands<String>{
     @Override
     public String invoke(String command) throws Exception {
         if(!verifyCommand(command)){
+            //Log the command
             System.out.println("command");
             throw new RuntimeException("Something went wrong with executed command");
         }
@@ -45,7 +48,7 @@ public class DbInfoCommand implements Commands<String>{
             System.out.println(e);
             System.out.println(e.getMessage());
         }
-        //Return something random as it is not used
+        //Return something empyt string
         return "";
     }
 }

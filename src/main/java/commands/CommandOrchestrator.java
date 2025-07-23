@@ -5,14 +5,17 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+import strategy.DataExtractionStrategy;
 
 @Getter
 @Setter
 public class CommandOrchestrator {
     private final List<Commands<?>> commandsList;
 
-    public CommandOrchestrator(List<Commands<?>> commandsList) {
+    public CommandOrchestrator(List<Commands<?>> commandsList, DataExtractionStrategy dataExtractionStrategy) {
         this.commandsList = commandsList;
+        // Add the new DeleteFromTableCommand
+        this.commandsList.add(new DeleteFromTableCommand(dataExtractionStrategy));
     }
 
     public Object execute(String command) {
